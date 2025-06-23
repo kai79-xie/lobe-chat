@@ -215,7 +215,6 @@ export class GenerationService {
     log('Processing cover image to 256x256 webp format');
     const coverBuffer = await sharp(originalImageBuffer)
       .resize(256, 256, { fit: 'cover', position: 'center' })
-      .webp({ quality: 85 })
       .toBuffer();
 
     log('Cover image processed, final size:', coverBuffer.length);
