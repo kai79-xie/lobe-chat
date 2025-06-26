@@ -31,6 +31,10 @@ export class S3StaticFileImpl implements FileServiceImpl {
     return this.s3.getFileByteArray(key);
   }
 
+  async getFileBuffer(key: string): Promise<Buffer> {
+    return this.s3.getFileBuffer(key);
+  }
+
   async createPreSignedUrl(key: string): Promise<string> {
     return this.s3.createPreSignedUrl(key);
   }

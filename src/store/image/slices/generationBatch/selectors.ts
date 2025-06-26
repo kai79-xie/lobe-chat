@@ -33,6 +33,12 @@ const isCurrentGenerationBatchLoading = (s: ImageStoreState): boolean => {
   return s.generationBatchLoadingIds.includes(activeTopicId);
 };
 
+const isCurrentGenerationTopicLoaded = (s: ImageStoreState): boolean => {
+  const activeTopicId = generationTopicSelectors.activeGenerationTopicId(s);
+  if (!activeTopicId) return false;
+  return Array.isArray(s.generationBatchesMap[activeTopicId]);
+};
+
 // ====== aggregate selectors ====== //
 
 export const generationBatchSelectors = {
@@ -41,4 +47,5 @@ export const generationBatchSelectors = {
   getGenerationBatchByBatchId,
   isGenerationBatchLoading,
   isCurrentGenerationBatchLoading,
+  isCurrentGenerationTopicLoaded,
 };

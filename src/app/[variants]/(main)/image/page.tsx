@@ -1,4 +1,5 @@
 import { Divider } from 'antd';
+import { Suspense } from 'react';
 import { Flexbox } from 'react-layout-kit';
 
 import ConfigPanel from '@/app/[variants]/(main)/image/features/ConfigPanel';
@@ -55,7 +56,9 @@ const AiImage = async (props: DynamicLayoutProps) => {
         <Divider style={{ height: '100%', margin: 0 }} type="vertical" />
 
         {/* 中间内容区域 */}
-        <ImageWorkspace />
+        <Suspense fallback={<Flexbox flex={1} />}>
+          <ImageWorkspace />
+        </Suspense>
 
         <Divider style={{ height: '100%', margin: 0 }} type="vertical" />
 

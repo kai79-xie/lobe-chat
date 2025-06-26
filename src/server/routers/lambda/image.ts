@@ -186,7 +186,7 @@ export const imageRouter = router({
           generationId: generation.id,
           provider,
           model,
-          params, // 使用原始 params（包含完整 URLs）发送给异步任务
+          params, // 使用原始参数
         });
       } catch (e) {
         console.error('[createImage] async task trigger error:', e);

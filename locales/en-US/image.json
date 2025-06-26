@@ -27,7 +27,7 @@
     "steps": {
       "label": "Steps"
     },
-    "title": "AI Image Generation",
+    "title": "AI Image",
     "width": {
       "label": "Width"
     }
@@ -43,6 +43,7 @@
       "downloadFailed": "Failed to download image. Please check your network connection or S3 storage CORS configuration.",
       "errorCopied": "Error Message Copied to Clipboard",
       "errorCopyFailed": "Failed to Copy Error Message",
+      "generate": "Generate",
       "promptCopied": "Prompt Copied to Clipboard",
       "promptCopyFailed": "Failed to Copy Prompt",
       "reuseSettings": "Reuse Settings",

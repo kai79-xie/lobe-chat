@@ -56,8 +56,6 @@ export const createGenerationTopicSlice: StateCreator<
     // Create topic with default title
     const topicId = await internal_createGenerationTopic();
 
-    set({ activeGenerationTopicId: topicId }, false, n('createGenerationTopic'));
-
     // Auto-generate title from prompts
     if (prompts.length > 0) {
       // Run summary async, don't wait for it

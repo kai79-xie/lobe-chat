@@ -18,12 +18,13 @@ import { GenerationBatchDispatch, generationBatchReducer } from './reducer';
 const n = setNamespace('generationBatch');
 
 // ====== SWR key ====== //
-const SWR_USE_FETCH_GENERATION_BATCHES = 'SWR_USE_FETCH_GENERATION_BATCHES';
+export const SWR_USE_FETCH_GENERATION_BATCHES = 'SWR_USE_FETCH_GENERATION_BATCHES';
 const SWR_USE_CHECK_GENERATION_STATUS = 'SWR_USE_CHECK_GENERATION_STATUS';
 
 // ====== action interface ====== //
 
 export interface GenerationBatchAction {
+  addOptimisticGenerationBatch: (topicId: string, batch: GenerationBatch) => void;
   internal_dispatchGenerationBatch: (
     topicId: string,
     payload: GenerationBatchDispatch,
@@ -52,6 +53,15 @@ export const createGenerationBatchSlice: StateCreator<
   [],
   GenerationBatchAction
 > = (set, get) => ({
+  addOptimisticGenerationBatch: (topicId: string, batch: GenerationBatch) => {
+    const { internal_dispatchGenerationBatch } = get();
+    internal_dispatchGenerationBatch(
+      topicId,
+      { type: 'addBatch', value: batch },
+      'addOptimisticGenerationBatch',
+    );
+  },
+
   removeGeneration: async (generationId: string) => {
     const { internal_deleteGeneration, activeGenerationTopicId, refreshGenerationBatches } = get();
 
@@ -192,7 +202,6 @@ export const createGenerationBatchSlice: StateCreator<
         return generationBatchService.getGenerationBatches(topicId);
       },
       {
-        suspense: true,
         onSuccess: (data) => {
           const nextMap = {
             ...get().generationBatchesMap,

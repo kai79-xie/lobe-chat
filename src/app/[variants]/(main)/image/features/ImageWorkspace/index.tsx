@@ -1,15 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useQueryState } from 'nuqs';
 
 import EmptyLayout from './EmptyLayout';
-import SkeletonList from './SkeletonList';
-
-const ImageWorkspaceContent = dynamic(() => import('./ImageWorkspaceContent'), {
-  ssr: false,
-  loading: () => <SkeletonList />,
-});
+import ImageWorkspaceContent from './ImageWorkspaceContent';
 
 const ImageWorkspace = () => {
   const [topic] = useQueryState('topic');

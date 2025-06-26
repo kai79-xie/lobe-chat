@@ -13,7 +13,7 @@ const EmptyLayout = memo(() => {
       }}
     >
       <Center flex={1} padding={24}>
-        <PromptInput />
+        <PromptInput showTitle={true} />
       </Center>
     </Flexbox>
   );

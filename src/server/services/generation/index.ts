@@ -7,7 +7,6 @@ import sharp from 'sharp';
 import { LobeChatDatabase } from '@/database/type';
 import { FileService } from '@/server/services/file';
 import { getYYYYmmddHHMMss } from '@/utils/time';
-import { inferContentTypeFromImageUrl } from '@/utils/url';
 
 const log = debug('lobe-image:generation-service');
 
@@ -55,10 +54,13 @@ export class GenerationService {
       log('Fetching image from URL:', url);
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Failed to fetch image from ${url}: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch image from ${url}: ${response.status} ${response.statusText}`,
+        );
       }
-      originalImageBuffer = Buffer.from(await response.arrayBuffer());
-      originalMimeType = inferContentTypeFromImageUrl(url) || 'image/jpeg';
+      const arrayBuffer = await response.arrayBuffer();
+      originalImageBuffer = Buffer.from(arrayBuffer);
+      originalMimeType = response.headers.get('content-type') || 'application/octet-stream';
       log('Successfully fetched image, buffer size:', originalImageBuffer.length);
     }
 
@@ -205,9 +207,12 @@ export class GenerationService {
       log('Fetching cover image from URL:', coverUrl);
       const response = await fetch(coverUrl);
       if (!response.ok) {
-        throw new Error(`Failed to fetch cover image from ${coverUrl}: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch cover image from ${coverUrl}: ${response.status} ${response.statusText}`,
+        );
       }
-      originalImageBuffer = Buffer.from(await response.arrayBuffer());
+      const arrayBuffer = await response.arrayBuffer();
+      originalImageBuffer = Buffer.from(arrayBuffer);
       log('Successfully fetched cover image, buffer size:', originalImageBuffer.length);
     }
 

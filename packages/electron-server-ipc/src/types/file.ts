@@ -3,8 +3,8 @@ export interface DeleteFilesResponse {
   success: boolean;
 }
 
-export interface UploadFileParams {
-  content: ArrayBuffer;
+export interface CreateFileParams {
+  content: string; // Base64 encoded binary data
   filename: string;
   hash: string;
   path: string;

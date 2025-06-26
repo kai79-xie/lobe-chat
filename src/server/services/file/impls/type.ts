@@ -28,6 +28,11 @@ export interface FileServiceImpl {
   getFileByteArray(key: string): Promise<Uint8Array>;
 
   /**
+   * 获取文件Buffer
+   */
+  getFileBuffer(key: string): Promise<Buffer>;
+
+  /**
    * 获取文件内容
    */
   getFileContent(key: string): Promise<string>;

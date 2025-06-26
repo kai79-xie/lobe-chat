@@ -1,12 +1,10 @@
 'use client';
 
-import { Form, FormItemProps } from '@lobehub/ui';
 import { createStyles } from 'antd-style';
-import { memo, useEffect } from 'react';
+import { ReactNode, memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Flexbox } from 'react-layout-kit';
 
-import { FORM_STYLE } from '@/const/layoutTokens';
-import { saveImageGenerationConfig } from '@/store/image/slices/generationConfig/initialState';
 import { imageGenerationConfigSelectors } from '@/store/image/slices/generationConfig/selectors';
 import { useImageStore } from '@/store/image/store';
 
@@ -30,23 +28,43 @@ const useStyles = createStyles(({ css, token }) => ({
     padding: 16px;
     border-inline-start: 1px solid ${token.colorBorderSecondary};
   `,
+  configItem: css`
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  `,
+  label: css`
+    margin-bottom: 8px;
+    font-size: ${token.fontSize}px;
+    font-weight: ${token.fontWeightStrong};
+    color: ${token.colorText};
+    line-height: ${token.lineHeight};
+  `,
 }));
+
+interface ConfigItemLayoutProps {
+  label: string;
+  children: ReactNode;
+}
+
+const ConfigItemLayout = memo<ConfigItemLayoutProps>(({ label, children }) => {
+  const { styles } = useStyles();
+
+  return (
+    <div className={styles.configItem}>
+      <div className={styles.label}>{label}</div>
+      <div>{children}</div>
+    </div>
+  );
+});
+
 const isSupportParamSelector = imageGenerationConfigSelectors.isSupportParam;
 
 const ConfigPanel = memo(() => {
   const { styles } = useStyles();
   const { t } = useTranslation('image');
-
-  // Get current model and provider
-  const model = useImageStore(imageGenerationConfigSelectors.model);
-  const provider = useImageStore(imageGenerationConfigSelectors.provider);
-
-  // Save to localStorage when model or provider changes
-  useEffect(() => {
-    if (model && provider) {
-      saveImageGenerationConfig(model, provider);
-    }
-  }, [model, provider]);
 
   const isSupportWidth = useImageStore(isSupportParamSelector('width'));
   const isSupportHeight = useImageStore(isSupportParamSelector('height'));
@@ -56,62 +74,59 @@ const ConfigPanel = memo(() => {
   const isSupportSteps = useImageStore(isSupportParamSelector('steps'));
   const isSupportImageUrls = useImageStore(isSupportParamSelector('imageUrls'));
 
-  const configs = (
-    [
-      {
-        label: t('config.model.label'),
-        children: <ModelSelect />,
-      },
-      isSupportImageUrls && {
-        label: t('config.imageUrls.label'),
-        children: <ImageUrlsUpload />,
-      },
-      isSupportSize && {
-        label: t('config.size.label'),
-        children: <SizeSelect />,
-      },
-      isSupportAspectRatio && {
-        label: t('config.aspectRatio.label'),
-        children: <AspectRatioSelect />,
-      },
-      isSupportWidth && {
-        label: t('config.width.label'),
-        children: <SizeSliderInput paramName="width" />,
-      },
-      isSupportHeight && {
-        label: t('config.height.label'),
-        children: <SizeSliderInput paramName="height" />,
-      },
-      isSupportSteps && {
-        label: t('config.steps.label'),
-        children: <StepsSliderInput />,
-      },
-      isSupportSeed && {
-        label: t('config.seed.label'),
-        children: <SeedNumberInput />,
-      },
-      {
-        label: t('config.imageNum.label'),
-        children: <ImageNum />,
-      },
-    ] satisfies Array<Partial<FormItemProps> | boolean>
-  )
-    .filter(Boolean)
-    .map((item) => ({ ...item, layout: 'vertical' as const }));
-
   return (
     <aside className={styles.container}>
-      <Form
-        items={[
-          {
-            children: configs,
-            title: t('config.title'),
-          },
-        ]}
-        itemsType={'group'}
-        variant={'borderless'}
-        {...FORM_STYLE}
-      />
+      <Flexbox gap={0}>
+        <ConfigItemLayout label={t('config.model.label')}>
+          <ModelSelect />
+        </ConfigItemLayout>
+
+        {isSupportImageUrls && (
+          <ConfigItemLayout label={t('config.imageUrls.label')}>
+            <ImageUrlsUpload />
+          </ConfigItemLayout>
+        )}
+
+        {isSupportSize && (
+          <ConfigItemLayout label={t('config.size.label')}>
+            <SizeSelect />
+          </ConfigItemLayout>
+        )}
+
+        {isSupportAspectRatio && (
+          <ConfigItemLayout label={t('config.aspectRatio.label')}>
+            <AspectRatioSelect />
+          </ConfigItemLayout>
+        )}
+
+        {isSupportWidth && (
+          <ConfigItemLayout label={t('config.width.label')}>
+            <SizeSliderInput paramName="width" />
+          </ConfigItemLayout>
+        )}
+
+        {isSupportHeight && (
+          <ConfigItemLayout label={t('config.height.label')}>
+            <SizeSliderInput paramName="height" />
+          </ConfigItemLayout>
+        )}
+
+        {isSupportSteps && (
+          <ConfigItemLayout label={t('config.steps.label')}>
+            <StepsSliderInput />
+          </ConfigItemLayout>
+        )}
+
+        {isSupportSeed && (
+          <ConfigItemLayout label={t('config.seed.label')}>
+            <SeedNumberInput />
+          </ConfigItemLayout>
+        )}
+
+        <ConfigItemLayout label={t('config.imageNum.label')}>
+          <ImageNum />
+        </ConfigItemLayout>
+      </Flexbox>
     </aside>
   );
 });

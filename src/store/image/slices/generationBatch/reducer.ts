@@ -26,11 +26,17 @@ interface DeleteGenerationInBatchAction {
   type: 'deleteGenerationInBatch';
 }
 
+interface AddGenerationBatchAction {
+  type: 'addBatch';
+  value: GenerationBatch;
+}
+
 export type GenerationBatchDispatch =
   | UpdateGenerationInBatchAction
   | UpdateGenerationBatchAction
   | DeleteGenerationBatchAction
-  | DeleteGenerationInBatchAction;
+  | DeleteGenerationInBatchAction
+  | AddGenerationBatchAction;
 
 export const generationBatchReducer = (
   state: GenerationBatch[] = [],
@@ -78,6 +84,13 @@ export const generationBatchReducer = (
         draftState[batchIndex].generations = draftState[batchIndex].generations.filter(
           (gen) => gen.id !== payload.generationId,
         );
+      });
+    }
+
+    case 'addBatch': {
+      return produce(state, (draftState) => {
+        // Add new batch at the beginning of the array (newest first)
+        draftState.unshift(payload.value);
       });
     }
 

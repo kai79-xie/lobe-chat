@@ -57,19 +57,19 @@ export const loadImageGenerationConfig = (): StoredConfig | null => {
 };
 
 // Load from localStorage or use defaults
-const getInitialConfig = (): Pick<GenerationConfigState, 'model' | 'provider'> => {
-  const stored = loadImageGenerationConfig();
-  return {
-    model: stored?.model || DEFAULT_AI_IMAGE_MODEL,
-    provider: stored?.provider || DEFAULT_AI_IMAGE_PROVIDER,
-  };
-};
+// const getInitialConfig = (): Pick<GenerationConfigState, 'model' | 'provider'> => {
+//   const stored = loadImageGenerationConfig();
+//   return {
+//     model: stored?.model || DEFAULT_AI_IMAGE_MODEL,
+//     provider: stored?.provider || DEFAULT_AI_IMAGE_PROVIDER,
+//   };
+// };
 
-const initialConfig = getInitialConfig();
+// const initialConfig = getInitialConfig();
 
 export const initialGenerationConfigState: GenerationConfigState = {
-  model: initialConfig.model,
-  provider: initialConfig.provider,
+  model: DEFAULT_AI_IMAGE_MODEL,
+  provider: DEFAULT_AI_IMAGE_PROVIDER,
   imageNum: DEFAULT_IMAGE_NUM,
   parameters: DEFAULT_IMAGE_GENERATION_PARAMETERS,
   parameterSchema: FluxSchnellSchema,

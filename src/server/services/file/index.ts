@@ -53,6 +53,13 @@ export class FileService {
   }
 
   /**
+   * 获取文件Buffer
+   */
+  public async getFileBuffer(key: string): Promise<Buffer> {
+    return this.impl.getFileBuffer(key);
+  }
+
+  /**
    * 创建预签名上传URL
    */
   public async createPreSignedUrl(key: string): Promise<string> {
