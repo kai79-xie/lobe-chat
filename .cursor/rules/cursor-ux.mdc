@@ -7,10 +7,10 @@ alwaysApply: true
 
 ## File Path and Code Symbol Rendering
 
-- When rendering file paths (with or without line/column numbers), use backtick wrapping instead of markdown links so they can be parsed as clickable links in Cursor IDE
+- When rendering file paths, use backtick wrapping instead of markdown links so they can be parsed as clickable links in Cursor IDE.
 
-    - Good: `src/components/Button.tsx:12`
-    - Bad: [src/components/Button.tsx:12](mdc:src/components/Button.tsx)
+    - Good: `src/components/Button.tsx`
+    - Bad: [src/components/Button.tsx](mdc:src/components/Button.tsx)
 
 - When rendering functions, variables, or other code symbols, use backtick wrapping so they can be parsed as navigable links in Cursor IDE
     - Good: The `useState` hook in `MyComponent`

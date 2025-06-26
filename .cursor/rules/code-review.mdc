@@ -30,6 +30,7 @@ Gather the modified code and context. Please strictly follow the process below:
 - Prefer `async`/`await` over callbacks or chained `.then` promises.  
 - Use consistent, descriptive naming—avoid obscure abbreviations.  
 - Replace magic numbers or strings with well-named constants.  
+- Use semantically meaningful variable, function, and class names.
 - Ignore purely formatting issues and other autofixable lint problems.
 
 ### Code Optimization
@@ -62,7 +63,7 @@ Gather the modified code and context. Please strictly follow the process below:
     - Use an ordered list, which will be convenient for me to reference later.
     - For each issue:
       - Mark severity tag (`❌ Must fix`, `⚠️ Should fix`, `💅 Nitpick`)  
-      - Provode file path to the relevant line(s).
+      - Provode file path to the relevant file.
       - Provide recommended fix  
     - End with a **git commit** command, instruct the author to run it.  
       - We use gitmoji to label commit messages, format: [emoji] <type>(<scope>): <subject>
