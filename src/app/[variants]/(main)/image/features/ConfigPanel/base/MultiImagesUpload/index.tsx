@@ -10,7 +10,7 @@ import { Center } from 'react-layout-kit';
 import { useFileStore } from '@/store/file';
 import { FileUploadStatus } from '@/types/files/upload';
 
-import { CONFIG_PANEL_WIDTH } from '../constants';
+import { CONFIG_PANEL_WIDTH } from '../../constants';
 import ImageManageModal, { type ImageItem } from './ImageManageModal';
 
 // ======== Business Types ======== //

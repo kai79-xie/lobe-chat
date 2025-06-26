@@ -10,6 +10,7 @@ import { useImageStore } from '@/store/image/store';
 
 import AspectRatioSelect from './AspectRatioSelect';
 import ImageNum from './ImageNum';
+import ImageUrl from './ImageUrl';
 import ImageUrlsUpload from './ImageUrlsUpload';
 import ModelSelect from './ModelSelect';
 import SeedNumberInput from './SeedNumberInput';
@@ -26,6 +27,7 @@ const useStyles = createStyles(({ css, token }) => ({
     width: ${CONFIG_PANEL_WIDTH}px;
     height: 100%;
     padding: 16px;
+    padding-top: ${token.paddingXL}px;
     border-inline-start: 1px solid ${token.colorBorderSecondary};
   `,
   configItem: css`
@@ -66,6 +68,7 @@ const ConfigPanel = memo(() => {
   const { styles } = useStyles();
   const { t } = useTranslation('image');
 
+  const isSupportImageUrl = useImageStore(isSupportParamSelector('imageUrl'));
   const isSupportWidth = useImageStore(isSupportParamSelector('width'));
   const isSupportHeight = useImageStore(isSupportParamSelector('height'));
   const isSupportSize = useImageStore(isSupportParamSelector('size'));
@@ -80,6 +83,12 @@ const ConfigPanel = memo(() => {
         <ConfigItemLayout label={t('config.model.label')}>
           <ModelSelect />
         </ConfigItemLayout>
+
+        {isSupportImageUrl && (
+          <ConfigItemLayout label={t('config.imageUrl.label')}>
+            <ImageUrl />
+          </ConfigItemLayout>
+        )}
 
         {isSupportImageUrls && (
           <ConfigItemLayout label={t('config.imageUrls.label')}>

@@ -68,6 +68,15 @@
   "GoBack": {
     "back": "返回"
   },
+  "ImageUpload": {
+    "placeholder": {
+      "primary": "添加图片",
+      "secondary": "点击上传"
+    },
+    "actions": {
+      "changeImage": "点击更换图片"
+    }
+  },
   "MaxTokenSlider": {
     "unlimited": "无限制"
   },

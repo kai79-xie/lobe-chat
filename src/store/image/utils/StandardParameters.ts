@@ -19,6 +19,13 @@ export const StdParamsZodSchema = z.object({
         description: z.string().optional(),
       })
       .optional(),
+    imageUrl: z
+      .object({
+        type: z.tuple([z.literal('string'), z.literal('null')]).optional(),
+        default: z.string().nullable().optional(),
+        description: z.string().optional(),
+      })
+      .optional(),
     width: z
       .object({
         type: z.literal('number').optional(),
@@ -95,11 +102,13 @@ type TypeMapping<T> = T extends 'string'
     ? number
     : T extends ['number', 'null']
       ? number | null
-      : T extends 'string'
-        ? string
-        : T extends 'boolean'
-          ? boolean
-          : never;
+      : T extends ['string', 'null']
+        ? string | null
+        : T extends 'string'
+          ? string
+          : T extends 'boolean'
+            ? boolean
+            : never;
 type _StandardImageGenerationParameters<P extends keyof SchemaProperties = keyof SchemaProperties> =
   {
     [key in P]-?: TypeMapping<SchemaProperties[key]['type']>;

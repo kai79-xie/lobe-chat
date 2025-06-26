@@ -32,6 +32,7 @@ export class LobeFalAI implements LobeRuntimeAI {
     const paramsMap = new Map<StdImageGenParamsKeys, string>([
       ['steps', 'num_inference_steps'],
       ['cfg', 'guidance_scale'],
+      ['imageUrl', 'image_url'],
     ]);
 
     const defaultInput = {

@@ -73,6 +73,15 @@ export default {
   MaxTokenSlider: {
     unlimited: '无限制',
   },
+  ImageUpload: {
+    placeholder: {
+      primary: '添加图片',
+      secondary: '点击上传',
+    },
+    actions: {
+      changeImage: '点击更换图片',
+    },
+  },
   MultiImagesUpload: {
     placeholder: {
       primary: '点击上传图片',

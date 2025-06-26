@@ -31,6 +31,9 @@ export const image = {
     imageUrls: {
       label: '参考图',
     },
+    imageUrl: {
+      label: '参考图',
+    },
   },
   topic: {
     createNew: '新建主题',

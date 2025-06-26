@@ -189,7 +189,7 @@ export const createGenerationBatchSlice: StateCreator<
 
   useCheckGenerationStatus: (generationId, asyncTaskId, topicId, enable = true) =>
     useClientDataSWR(
-      enable && generationId && asyncTaskId
+      enable && generationId && !generationId.startsWith('temp-') && asyncTaskId
         ? [SWR_USE_CHECK_GENERATION_STATUS, generationId, asyncTaskId]
         : null,
       async ([, generationId, asyncTaskId]: [string, string, string]) => {

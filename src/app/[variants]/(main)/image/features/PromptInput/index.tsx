@@ -109,7 +109,7 @@ const useButtonStyles = () =>
       font-weight: 600;
       color: #000000;
       transition: all 0.2s ease;
-      min-height: 60px;
+      min-height: 54px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
       ${responsive.mobile} {
