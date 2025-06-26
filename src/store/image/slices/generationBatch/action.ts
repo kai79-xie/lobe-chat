@@ -6,7 +6,6 @@ import { useClientDataSWR } from '@/libs/swr';
 import { GetGenerationStatusResult } from '@/server/routers/lambda/generation';
 import { generationService } from '@/services/generation';
 import { generationBatchService } from '@/services/generationBatch';
-import { toggleBooleanList } from '@/store/chat/utils';
 import { AsyncTaskStatus } from '@/types/asyncTask';
 import { GenerationBatch } from '@/types/generation';
 import { setNamespace } from '@/utils/storeDebug';
@@ -18,7 +17,7 @@ import { GenerationBatchDispatch, generationBatchReducer } from './reducer';
 const n = setNamespace('generationBatch');
 
 // ====== SWR key ====== //
-export const SWR_USE_FETCH_GENERATION_BATCHES = 'SWR_USE_FETCH_GENERATION_BATCHES';
+const SWR_USE_FETCH_GENERATION_BATCHES = 'SWR_USE_FETCH_GENERATION_BATCHES';
 const SWR_USE_CHECK_GENERATION_STATUS = 'SWR_USE_CHECK_GENERATION_STATUS';
 
 // ====== action interface ====== //
@@ -30,7 +29,6 @@ export interface GenerationBatchAction {
     payload: GenerationBatchDispatch,
     action?: string,
   ) => void;
-  internal_toggleGenerationBatchLoading: (topicId: string, loading: boolean) => void;
   removeGeneration: (generationId: string) => Promise<void>;
   internal_deleteGeneration: (generationId: string) => Promise<void>;
   removeGenerationBatch: (batchId: string, topicId: string) => Promise<void>;
@@ -105,22 +103,11 @@ export const createGenerationBatchSlice: StateCreator<
       'internal_deleteGeneration',
     );
 
-    // 显示加载状态
-    get().internal_toggleGenerationBatchLoading(activeGenerationTopicId, true);
+    // 2. 调用后端服务删除generation
+    await generationService.deleteGeneration(generationId);
 
-    try {
-      // 2. 调用后端服务删除generation
-      await generationService.deleteGeneration(generationId);
-
-      // 3. 刷新数据确保一致性
-      await refreshGenerationBatches();
-    } catch (error) {
-      console.error('Failed to delete generation:', error);
-      throw error;
-    } finally {
-      // 确保清除加载状态（无论成功或失败）
-      get().internal_toggleGenerationBatchLoading(activeGenerationTopicId, false);
-    }
+    // 3. 刷新数据确保一致性
+    await refreshGenerationBatches();
   },
 
   removeGenerationBatch: async (batchId: string, topicId: string) => {
@@ -138,19 +125,11 @@ export const createGenerationBatchSlice: StateCreator<
       'internal_deleteGenerationBatch',
     );
 
-    // 显示加载状态
-    get().internal_toggleGenerationBatchLoading(topicId, true);
+    // 2. 调用后端服务
+    await generationBatchService.deleteGenerationBatch(batchId);
 
-    try {
-      // 2. 调用后端服务
-      await generationBatchService.deleteGenerationBatch(batchId);
-
-      // 3. 刷新数据确保一致性
-      await refreshGenerationBatches();
-    } finally {
-      // 确保清除加载状态（无论成功或失败）
-      get().internal_toggleGenerationBatchLoading(topicId, false);
-    }
+    // 3. 刷新数据确保一致性
+    await refreshGenerationBatches();
   },
 
   internal_dispatchGenerationBatch: (topicId, payload, action) => {
@@ -171,20 +150,6 @@ export const createGenerationBatchSlice: StateCreator<
       },
       false,
       action ?? n(`dispatchGenerationBatch/${payload.type}`),
-    );
-  },
-
-  internal_toggleGenerationBatchLoading: (topicId, loading) => {
-    set(
-      {
-        generationBatchLoadingIds: toggleBooleanList(
-          get().generationBatchLoadingIds,
-          topicId,
-          loading,
-        ),
-      },
-      false,
-      n(`internal_toggleGenerationBatchLoading/${loading ? 'start' : 'end'}`),
     );
   },
 

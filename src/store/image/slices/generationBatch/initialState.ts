@@ -6,13 +6,8 @@ export interface GenerationBatchState {
    * Key: generationTopicId, Value: array of GenerationBatch
    */
   generationBatchesMap: Record<string, GenerationBatch[]>;
-  /**
-   * Loading state for fetching batches by topic ID
-   */
-  generationBatchLoadingIds: string[];
 }
 
 export const initialGenerationBatchState: GenerationBatchState = {
   generationBatchesMap: {},
-  generationBatchLoadingIds: [],
 };

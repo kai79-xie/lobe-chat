@@ -30,19 +30,21 @@ const createTempBatch = (
   width?: number | null,
   height?: number | null,
 ): GenerationBatch => {
-  const tempBatchId = `temp-${Date.now()}`;
+  const timestamp = Date.now();
+  const createdAt = new Date(timestamp);
+  const tempBatchId = `temp-${timestamp}`;
   const tempGenerations: Generation[] = [];
 
   // Create temporary generations based on imageNum
   for (let i = 0; i < imageNum; i++) {
     tempGenerations.push({
-      id: `temp-gen-${Date.now()}-${i}`,
+      id: `temp-gen-${timestamp}-${i}`,
       asset: null,
       seed: null,
-      createdAt: new Date(),
+      createdAt,
       asyncTaskId: null,
       task: {
-        id: `temp-task-${Date.now()}-${i}`,
+        id: `temp-task-${timestamp}-${i}`,
         status: AsyncTaskStatus.Pending,
       },
     } as Generation);
@@ -56,7 +58,7 @@ const createTempBatch = (
     width: width || null,
     height: height || null,
     config,
-    createdAt: new Date(),
+    createdAt,
     generations: tempGenerations,
   };
 };
@@ -88,11 +90,15 @@ export const createCreateImageSlice: StateCreator<
       throw new TypeError('prompt is empty');
     }
 
+    // Track the final topic ID to use for image creation
+    let finalTopicId = activeGenerationTopicId;
+
     // 1. Create generation topic if not exists
-    let generationTopicId = activeGenerationTopicId;
-    if (!generationTopicId) {
+    const isEmptyTopic = !activeGenerationTopicId;
+    if (isEmptyTopic) {
       const prompts = [parameters.prompt];
-      generationTopicId = await createGenerationTopic(prompts);
+      const newGenerationTopicId = await createGenerationTopic(prompts);
+      finalTopicId = newGenerationTopicId;
 
       // 2. Optimistic update BEFORE switching topic to avoid skeleton screen
       const tempBatch = createTempBatch(
@@ -106,10 +112,10 @@ export const createCreateImageSlice: StateCreator<
       );
 
       // Add temporary batch to UI (optimistic update)
-      addOptimisticGenerationBatch(generationTopicId, tempBatch);
+      addOptimisticGenerationBatch(newGenerationTopicId, tempBatch);
 
       // 3. Switch to the new topic (now it has data, so no skeleton screen)
-      switchGenerationTopic(generationTopicId);
+      switchGenerationTopic(newGenerationTopicId);
     } else {
       // 2. For existing topic, just add optimistic batch
       const tempBatch = createTempBatch(
@@ -123,13 +129,13 @@ export const createCreateImageSlice: StateCreator<
       );
 
       // Add temporary batch to UI (optimistic update)
-      addOptimisticGenerationBatch(generationTopicId, tempBatch);
+      addOptimisticGenerationBatch(activeGenerationTopicId, tempBatch);
     }
 
     try {
       // 3. Create image via service
       await imageService.createImage({
-        generationTopicId,
+        generationTopicId: finalTopicId!,
         provider,
         model,
         imageNum,

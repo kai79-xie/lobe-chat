@@ -20,19 +20,6 @@ const getGenerationBatchByBatchId = (batchId: string) => (s: ImageStoreState) =>
   return batches.find((batch) => batch.id === batchId);
 };
 
-const isGenerationBatchLoading =
-  (topicId?: string) =>
-  (s: ImageStoreState): boolean => {
-    if (!topicId) return false;
-    return s.generationBatchLoadingIds.includes(topicId);
-  };
-
-const isCurrentGenerationBatchLoading = (s: ImageStoreState): boolean => {
-  const activeTopicId = generationTopicSelectors.activeGenerationTopicId(s);
-  if (!activeTopicId) return false;
-  return s.generationBatchLoadingIds.includes(activeTopicId);
-};
-
 const isCurrentGenerationTopicLoaded = (s: ImageStoreState): boolean => {
   const activeTopicId = generationTopicSelectors.activeGenerationTopicId(s);
   if (!activeTopicId) return false;
@@ -45,7 +32,5 @@ export const generationBatchSelectors = {
   getGenerationBatchesByTopicId,
   currentGenerationBatches,
   getGenerationBatchByBatchId,
-  isGenerationBatchLoading,
-  isCurrentGenerationBatchLoading,
   isCurrentGenerationTopicLoaded,
 };

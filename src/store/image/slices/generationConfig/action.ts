@@ -18,7 +18,6 @@ export interface GenerationConfigAction {
   reuseSeed: (seed: number) => void;
 }
 
-// helper function to extract common logic
 function getModelAndDefaults(model: string, provider: string) {
   const enabledImageModelList = aiProviderSelectors.enabledImageModelList(getAiInfraStoreState());
   const activeModel = enabledImageModelList
