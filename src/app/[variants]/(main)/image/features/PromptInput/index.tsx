@@ -14,6 +14,7 @@ import { useGenerationConfigParam } from '@/store/image/slices/generationConfig/
 
 interface PromptInputProps {
   showTitle?: boolean;
+  disableAnimation?: boolean;
 }
 
 const useStyles = createStyles(({ css, token, responsive }) => ({
@@ -128,7 +129,7 @@ const useButtonStyles = () =>
     `,
   }));
 
-const PromptInput = ({ showTitle = false }: PromptInputProps) => {
+const PromptInput = ({ showTitle = false, disableAnimation = false }: PromptInputProps) => {
   const { styles } = useStyles();
   const { styles: buttonStyles } = useButtonStyles()();
   const { t } = useTranslation('image');
@@ -162,14 +163,18 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
       <motion.div
         animate={{ opacity: 1, scale: 1 }}
         className={styles.container}
-        initial={{ opacity: 0, scale: 0.8 }}
-        transition={{
-          duration: 0.5,
-          ease: [0.175, 0.885, 0.32, 1.275],
-          type: 'spring',
-          damping: 15,
-          stiffness: 300,
-        }}
+        initial={disableAnimation ? undefined : { opacity: 0, scale: 0.8 }}
+        transition={
+          disableAnimation
+            ? undefined
+            : {
+                duration: 0.5,
+                ease: [0.175, 0.885, 0.32, 1.275],
+                type: 'spring',
+                damping: 15,
+                stiffness: 300,
+              }
+        }
       >
         <Flexbox align="center" gap={12} height={'100%'} horizontal width={'100%'}>
           <TextArea
@@ -183,19 +188,21 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
           />
           <motion.div
             animate={{ opacity: 1, scale: 1 }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
+            initial={disableAnimation ? undefined : { opacity: 0, scale: 0.8 }}
+            transition={disableAnimation ? undefined : { delay: 0.2, duration: 0.4 }}
             whileHover={
-              !isCreating && value.trim() ? { scale: 1.05, transition: { duration: 0.15 } } : {}
+              !disableAnimation && !isCreating && value.trim()
+                ? { scale: 1.05, transition: { duration: 0.15 } }
+                : {}
             }
-            whileTap={!isCreating && value.trim() ? { scale: 0.95 } : {}}
+            whileTap={!disableAnimation && !isCreating && value.trim() ? { scale: 0.95 } : {}}
           >
             <motion.button
               className={buttonStyles.generateButton}
               disabled={isCreating || !value.trim()}
               onClick={handleGenerate}
               whileHover={
-                !isCreating && value.trim()
+                !disableAnimation && !isCreating && value.trim()
                   ? {
                       transform: 'translateY(-1px)',
                       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
@@ -204,12 +211,16 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
               }
             >
               <motion.div
-                animate={isCreating ? {} : { rotate: 0 }}
-                transition={{
-                  duration: 1,
-                  repeat: 0,
-                  ease: 'linear',
-                }}
+                animate={isCreating && !disableAnimation ? {} : { rotate: 0 }}
+                transition={
+                  disableAnimation
+                    ? undefined
+                    : {
+                        duration: 1,
+                        repeat: 0,
+                        ease: 'linear',
+                      }
+                }
               >
                 {isCreating ? <Loader2 size={18} /> : <Sparkles size={18} />}
               </motion.div>

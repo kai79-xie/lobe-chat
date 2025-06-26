@@ -5,13 +5,24 @@ import { Center, Flexbox } from 'react-layout-kit';
 import GenerationFeed from '@/app/[variants]/(main)/image/features/GenerationFeed';
 import PromptInput from '@/app/[variants]/(main)/image/features/PromptInput';
 import { useImageStore } from '@/store/image';
+import { generationBatchSelectors } from '@/store/image/selectors';
 import { generationTopicSelectors } from '@/store/image/slices/generationTopic/selectors';
+
+import SkeletonList from './SkeletonList';
 
 const ImageWorkspaceContent = () => {
   const activeTopicId = useImageStore(generationTopicSelectors.activeGenerationTopicId);
   const useFetchGenerationBatches = useImageStore((s) => s.useFetchGenerationBatches);
-  const { data: currentBatches } = useFetchGenerationBatches(activeTopicId);
+  const isCurrentGenerationTopicLoaded = useImageStore(
+    generationBatchSelectors.isCurrentGenerationTopicLoaded,
+  );
+  useFetchGenerationBatches(activeTopicId);
+  const currentBatches = useImageStore(generationBatchSelectors.currentGenerationBatches);
   const hasGenerations = currentBatches && currentBatches.length > 0;
+
+  if (!isCurrentGenerationTopicLoaded) {
+    return <SkeletonList />;
+  }
 
   return (
     <Flexbox
@@ -32,13 +43,13 @@ const ImageWorkspaceContent = () => {
 
           {/* 底部输入框 */}
           <Center>
-            <PromptInput showTitle={false} />
+            <PromptInput disableAnimation={true} showTitle={false} />
           </Center>
         </>
       ) : (
         // 当没有生成结果时，将输入框完整居中显示
         <Center flex={1}>
-          <PromptInput showTitle={true} />
+          <PromptInput disableAnimation={true} showTitle={true} />
         </Center>
       )}
     </Flexbox>
