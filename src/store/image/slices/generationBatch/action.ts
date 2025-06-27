@@ -23,7 +23,7 @@ const SWR_USE_CHECK_GENERATION_STATUS = 'SWR_USE_CHECK_GENERATION_STATUS';
 // ====== action interface ====== //
 
 export interface GenerationBatchAction {
-  addOptimisticGenerationBatch: (topicId: string, batch: GenerationBatch) => void;
+  setTopicBatchLoaded: (topicId: string) => void;
   internal_dispatchGenerationBatch: (
     topicId: string,
     payload: GenerationBatchDispatch,
@@ -51,12 +51,21 @@ export const createGenerationBatchSlice: StateCreator<
   [],
   GenerationBatchAction
 > = (set, get) => ({
-  addOptimisticGenerationBatch: (topicId: string, batch: GenerationBatch) => {
-    const { internal_dispatchGenerationBatch } = get();
-    internal_dispatchGenerationBatch(
-      topicId,
-      { type: 'addBatch', value: batch },
-      'addOptimisticGenerationBatch',
+  setTopicBatchLoaded: (topicId: string) => {
+    const nextMap = {
+      ...get().generationBatchesMap,
+      [topicId]: [],
+    };
+
+    // no need to update map if the map is the same
+    if (isEqual(nextMap, get().generationBatchesMap)) return;
+
+    set(
+      {
+        generationBatchesMap: nextMap,
+      },
+      false,
+      n('setTopicBatchLoaded'),
     );
   },
 

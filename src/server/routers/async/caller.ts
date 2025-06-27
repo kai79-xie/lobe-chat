@@ -1,15 +1,24 @@
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import debug from 'debug';
 import superjson from 'superjson';
 import urlJoin from 'url-join';
 
 import { serverDBEnv } from '@/config/db';
 import { JWTPayload, LOBE_CHAT_AUTH_HEADER } from '@/const/auth';
+import { isDesktop } from '@/const/version';
 import { appEnv } from '@/envs/app';
+import { createAsyncCallerFactory } from '@/libs/trpc/async';
+import { createAsyncContextInner } from '@/libs/trpc/async/context';
 import { KeyVaultsGateKeeper } from '@/server/modules/KeyVaultsEncrypt';
 
+import { asyncRouter } from './index';
 import type { AsyncRouter } from './index';
 
+const log = debug('lobe-image:async-caller');
+
 export const createAsyncServerClient = async (userId: string, payload: JWTPayload) => {
+  log('Creating async server client for userId: %s', userId);
+
   const gateKeeper = await KeyVaultsGateKeeper.initWithEnvKey();
   const headers: Record<string, string> = {
     Authorization: `Bearer ${serverDBEnv.KEY_VAULTS_SECRET}`,
@@ -20,7 +29,7 @@ export const createAsyncServerClient = async (userId: string, payload: JWTPayloa
     headers['x-vercel-protection-bypass'] = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
   }
 
-  return createTRPCClient<AsyncRouter>({
+  const client = createTRPCClient<AsyncRouter>({
     links: [
       httpBatchLink({
         headers,
@@ -29,4 +38,114 @@ export const createAsyncServerClient = async (userId: string, payload: JWTPayloa
       }),
     ],
   });
+
+  log('Async server client created successfully for userId: %s', userId);
+  return client;
+};
+
+/**
+ * 用来推断 caller 类型辅助方法，但不实际调用 createAsyncCallerFactory，调用会报错：asyncRouter 没有初始化
+ */
+const helperFunc = () => {
+  const dummyCreateCaller = createAsyncCallerFactory(asyncRouter);
+  return {} as unknown as ReturnType<typeof dummyCreateCaller>;
+};
+
+export type UnifiedAsyncCaller = ReturnType<typeof helperFunc>;
+
+interface CreateCallerOptions {
+  jwtPayload: JWTPayload;
+  userId: string;
+}
+
+/**
+ * 创建 caller 的工厂方法，兼容 desktop server 和 remote server 环境
+ * 使用方式统一成 caller.a.b() 的调用方式
+ */
+export const createAsyncCaller = async (
+  options: CreateCallerOptions,
+): Promise<UnifiedAsyncCaller> => {
+  const { userId, jwtPayload } = options;
+
+  log('Creating async caller for userId: %s, isDesktop: %s', userId, isDesktop);
+  log('Environment - APP_URL: %s', appEnv.APP_URL);
+  log('JwtPayload keys: %O', Object.keys(jwtPayload || {}));
+
+  if (isDesktop) {
+    // Desktop 环境：使用 caller 直接同线程调用方法
+    log('Using desktop mode - creating direct caller');
+
+    const asyncContext = await createAsyncContextInner({
+      jwtPayload,
+      // 参考 src/libs/trpc/async/asyncAuth.ts
+      secret: serverDBEnv.KEY_VAULTS_SECRET,
+      userId,
+    });
+
+    log('Async context created for desktop mode');
+
+    const createCaller = createAsyncCallerFactory(asyncRouter);
+    const caller = createCaller(asyncContext);
+
+    log('Desktop caller created successfully');
+    return caller;
+  }
+  // 非 Desktop 环境：使用 HTTP Client
+  // http client 调用方式是 client.a.b.mutate(), 我希望统一成 caller.a.b() 的调用方式
+  else {
+    log('Using HTTP client mode - creating server client');
+
+    const httpClient = await createAsyncServerClient(userId, jwtPayload);
+    log('HTTP client created, creating recursive proxy');
+
+    const createRecursiveProxy = (client: any, path: string[]): any => {
+      // The target is a dummy function, so that 'apply' can be triggered.
+      return new Proxy(() => {}, {
+        apply: (target, thisArg, args) => {
+          // 'apply' is triggered by the function call `(...)`.
+          // The `path` at this point is the full path to the procedure.
+          log('Proxy apply triggered - path: %O, args: %O', path, args);
+
+          // Traverse the original httpClient to get the actual procedure object.
+          const procedure = path.reduce((obj, key) => {
+            log('Traversing path: %s, current obj: %O', key, obj ? Object.keys(obj) : null);
+            return obj ? obj[key] : undefined;
+          }, client);
+
+          log('Final procedure found: %O', procedure ? typeof procedure : null);
+
+          if (procedure && typeof procedure.mutate === 'function') {
+            // If we found a valid procedure, call its mutate method.
+            log('Calling procedure.mutate with args: %O', args);
+            const result = procedure.mutate(...args);
+            log('Procedure.mutate called, result type: %s', typeof result);
+            return result;
+          } else {
+            // This should not happen if the call path is correct.
+            const message = `Procedure not found or not valid at path: ${path.join('.')}`;
+            log('Error: %s', message);
+            throw new Error(message);
+          }
+        },
+        get: (_, property: string) => {
+          // When a property is accessed, we just extend the path and return a new proxy.
+          // This handles `caller.file.parseFileToChunks`
+          log('Proxy get triggered - property: %s, current path: %O', property, path);
+
+          if (property === 'then') {
+            log('Preventing async/await issues - returning undefined for "then"');
+            return undefined; // Prevent async/await issues
+          }
+
+          const newProxy = createRecursiveProxy(client, [...path, property as string]);
+          log('Created new proxy for path: %O', [...path, property]);
+          return newProxy;
+        },
+      });
+    };
+
+    const proxy = createRecursiveProxy(httpClient, []);
+    log('HTTP client proxy created successfully');
+    return proxy;
+  }
 };

@@ -371,7 +371,19 @@ export function createHandler({
       );
       protocol.handle('http', async (request) => {
         if (!isDev) {
-          assert(request.url.startsWith(localhostUrl), 'External HTTP not supported, use HTTPS');
+          // 检查是否是本地文件服务请求，如果是则允许通过
+          const isLocalhost = request.url.startsWith(localhostUrl);
+
+          const url = new URL(request.url);
+          const isLocalIP =
+            request.url.startsWith('http://127.0.0.1:') ||
+            request.url.startsWith('http://localhost:');
+          const isLocalFileService = url.pathname.startsWith(LOCAL_STORAGE_URL_PREFIX + '/');
+
+          const valid = isLocalhost || (isLocalIP && isLocalFileService);
+          if (!valid) {
+            throw new Error('External HTTP not supported, use HTTPS');
+          }
         }
 
         return handleRequest(request, session, socket);
