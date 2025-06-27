@@ -27,22 +27,23 @@ const useStyles = createStyles(({ css, token }) => ({
     width: ${CONFIG_PANEL_WIDTH}px;
     height: 100%;
     padding: 16px;
-    padding-top: ${token.paddingXL}px;
+    padding-block-start: ${token.paddingXL}px;
     border-inline-start: 1px solid ${token.colorBorderSecondary};
   `,
   configItem: css`
-    margin-bottom: 24px;
+    margin-block-end: 24px;
 
     &:last-child {
-      margin-bottom: 0;
+      margin-block-end: 0;
     }
   `,
   label: css`
-    margin-bottom: 8px;
+    margin-block-end: 8px;
+
     font-size: ${token.fontSize}px;
     font-weight: ${token.fontWeightStrong};
-    color: ${token.colorText};
     line-height: ${token.lineHeight};
+    color: ${token.colorText};
   `,
 }));
 

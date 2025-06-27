@@ -19,43 +19,49 @@ interface PromptInputProps {
 
 const useStyles = createStyles(({ css, token, responsive }) => ({
   wrapper: css`
-    width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 16px;
+    align-items: center;
+
+    width: 100%;
   `,
   header: css`
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-block-end: 8px;
   `,
   icon: css`
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    border-radius: ${token.borderRadius}px;
     display: flex;
     align-items: center;
     justify-content: center;
+
+    width: 40px;
+    height: 40px;
+    border-radius: ${token.borderRadius}px;
+
     color: ${token.colorTextSecondary};
+
+    background: transparent;
   `,
   title: css`
+    margin: 0;
     font-size: ${token.fontSizeXL}px;
     font-weight: 600;
     color: ${token.colorText};
-    margin: 0;
   `,
   container: css`
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: ${token.borderRadiusLG * 2}px;
-    box-shadow: 0 2px 8px ${token.colorFillTertiary};
-    background-color: ${token.colorFillTertiary};
     width: 100%;
 
     /* Default for desktop and larger screens */
     max-width: 680px;
-    padding: 8px 12px 8px 20px;
+    padding-block: 8px;
+    padding-inline: 20px 12px;
+    border: 1px solid ${token.colorBorderSecondary};
+    border-radius: ${token.borderRadiusLG * 2}px;
+
+    background-color: ${token.colorFillTertiary};
+    box-shadow: 0 2px 8px ${token.colorFillTertiary};
 
     /* Overrides for smaller screens */
     ${responsive.laptop} {
@@ -68,13 +74,17 @@ const useStyles = createStyles(({ css, token, responsive }) => ({
   `,
   textArea: css`
     flex: 1;
+
+    padding-block: 8px;
+    padding-inline: 0;
     border: none;
-    box-shadow: none;
     border-radius: 0;
-    background-color: transparent;
+
     font-size: ${token.fontSizeLG}px;
     line-height: 1.6;
-    padding: 8px 0;
+
+    background-color: transparent;
+    box-shadow: none;
 
     &::placeholder {
       color: ${token.colorTextTertiary};
@@ -83,14 +93,15 @@ const useStyles = createStyles(({ css, token, responsive }) => ({
     &:hover,
     &:focus,
     &:active {
-      box-shadow: none;
       border: none;
       background-color: transparent !important;
+      box-shadow: none;
     }
 
     ${responsive.mobile} {
+      padding-block: 6px;
+      padding-inline: 0;
       font-size: ${token.fontSize}px;
-      padding: 6px 0;
     }
   `,
 }));
@@ -98,23 +109,29 @@ const useStyles = createStyles(({ css, token, responsive }) => ({
 const useButtonStyles = () =>
   createStyles(({ css, token, responsive }) => ({
     generateButton: css`
-      background: #ffffff;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      min-height: 54px;
+      padding-block: 12px;
+      padding-inline: 20px;
       border: none;
       border-radius: ${token.borderRadius * 1.5}px;
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+
       font-size: ${token.fontSize}px;
       font-weight: 600;
-      color: #000000;
+      color: #000;
+
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 10%);
+
       transition: all 0.2s ease;
-      min-height: 54px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
       ${responsive.mobile} {
-        padding: 10px 16px;
         min-height: 50px;
+        padding-block: 10px;
+        padding-inline: 16px;
         font-size: ${token.fontSizeSM}px;
       }
 

@@ -122,7 +122,8 @@ const useStyles = createStyles(({ css, token }) => {
     changeButton: css`
       cursor: pointer;
 
-      padding: 8px 16px;
+      padding-block: 8px;
+      padding-inline: 16px;
       border: 1px solid ${token.colorBorder};
       border-radius: ${token.borderRadius}px;
 
@@ -144,8 +145,8 @@ const useStyles = createStyles(({ css, token }) => {
 
       position: absolute;
       z-index: 10;
-      top: 8px;
-      right: 8px;
+      inset-block-start: 8px;
+      inset-inline-end: 8px;
 
       display: flex;
       align-items: center;
