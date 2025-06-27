@@ -2,7 +2,6 @@ import debug from 'debug';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
-import { JWTPayload } from '@/const/auth';
 import { AsyncTaskModel } from '@/database/models/asyncTask';
 import {
   NewGeneration,
@@ -13,7 +12,7 @@ import {
 } from '@/database/schemas';
 import { authedProcedure, router } from '@/libs/trpc/lambda';
 import { keyVaults, serverDatabase } from '@/libs/trpc/lambda/middleware';
-import { createAsyncServerClient } from '@/server/routers/async';
+import { createAsyncCaller } from '@/server/routers/async/caller';
 import { FileService } from '@/server/services/file';
 import {
   AsyncTaskError,
@@ -169,37 +168,85 @@ export const imageRouter = router({
       };
     });
 
-    log('Database transaction completed successfully. Starting async task triggers.');
+    log('Database transaction completed successfully. Starting async task triggers directly.');
 
-    // 步骤 2: 触发所有生图任务
-    const asyncCaller = await createAsyncServerClient(userId, ctx.jwtPayload as JWTPayload);
-    log('Async caller created, jwtPayload: %O', ctx.jwtPayload);
-    log(
-      'Scheduling %d async image generation tasks to run after response',
-      generationsWithTasks.length,
-    );
-    generationsWithTasks.forEach(({ generation, asyncTaskId }) => {
+    // 步骤 2: 直接执行所有生图任务（去掉 after 包装）
+    log('Starting async image generation tasks directly');
+
+    try {
+      log('Creating unified async caller for userId: %s', userId);
+      log(
+        'Lambda context - userId: %s, jwtPayload keys: %O',
+        ctx.userId,
+        Object.keys(ctx.jwtPayload || {}),
+      );
+
+      // 使用统一的 caller 工厂创建 caller
+      const asyncCaller = await createAsyncCaller({
+        userId: ctx.userId,
+        jwtPayload: ctx.jwtPayload,
+      });
+
+      log('Unified async caller created successfully for userId: %s', ctx.userId);
+      log('Processing %d async image generation tasks', generationsWithTasks.length);
+
+      // 启动所有图像生成任务（不等待完成，真正的后台任务）
+      generationsWithTasks.forEach(({ generation, asyncTaskId }) => {
+        log('Starting background async task %s for generation %s', asyncTaskId, generation.id);
+
+        // 不使用 await，让任务在后台异步执行
+        asyncCaller.image
+          .createImage({
+            taskId: asyncTaskId,
+            generationId: generation.id,
+            provider,
+            model,
+            params, // 使用原始参数
+          })
+          .then(() => {
+            log('Background async task %s completed successfully', asyncTaskId);
+          })
+          .catch((e: any) => {
+            console.error(`[createImage] Background async task ${asyncTaskId} execution error:`, e);
+            log('Background async task %s execution failed: %O', asyncTaskId, e);
+
+            // 更新任务状态为失败
+            asyncTaskModel
+              .update(asyncTaskId, {
+                error: new AsyncTaskError(
+                  AsyncTaskErrorType.ServerError,
+                  e.message || 'Unknown error',
+                ),
+                status: AsyncTaskStatus.Error,
+              })
+              .catch((updateError) => {
+                console.error(`Failed to update task ${asyncTaskId} status:`, updateError);
+              });
+          });
+      });
+
+      log('All %d background async image generation tasks started', generationsWithTasks.length);
+    } catch (e) {
+      console.error('[createImage] Failed to process async tasks:', e);
+      log('Failed to process async tasks: %O', e);
+
+      // 如果整体失败，更新所有任务状态为失败
       try {
-        log('Triggering async task %s for generation %s', asyncTaskId, generation.id);
-        asyncCaller.image.createImage.mutate({
-          taskId: asyncTaskId,
-          generationId: generation.id,
-          provider,
-          model,
-          params, // 使用原始参数
-        });
-      } catch (e) {
-        console.error('[createImage] async task trigger error:', e);
-        asyncTaskModel.update(asyncTaskId, {
-          error: new AsyncTaskError(
-            AsyncTaskErrorType.TaskTriggerError,
-            e instanceof Error ? e.message : 'Trigger image generation async task error',
+        await Promise.allSettled(
+          generationsWithTasks.map(({ asyncTaskId }) =>
+            asyncTaskModel.update(asyncTaskId, {
+              error: new AsyncTaskError(
+                AsyncTaskErrorType.ServerError,
+                e instanceof Error ? e.message : 'Failed to process async tasks',
+              ),
+              status: AsyncTaskStatus.Error,
+            }),
           ),
-          status: AsyncTaskStatus.Error,
-        });
+        );
+      } catch (batchUpdateError) {
+        console.error('Failed to update batch task statuses:', batchUpdateError);
       }
-    });
-    log('Async tasks scheduled, returning immediate response');
+    }
 
     const createdGenerations = generationsWithTasks.map((item) => item.generation);
     log('Image creation process completed successfully: %O', {
