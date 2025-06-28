@@ -1,10 +1,20 @@
 import { AIImageModelCard } from '@/types/aiModel';
 
+import FluxKontextDevParamsSchema from '../paramsSchemas/fal/flux-kontext-dev.json';
 import FluxKontextProParamsSchema from '../paramsSchemas/fal/flux-pro-kontext.json';
 import FluxSchnellParamsSchema from '../paramsSchemas/fal/flux-schnell.json';
 import Imagen4ParamsSchema from '../paramsSchemas/fal/imagen4.json';
 
 const googleChatModels: AIImageModelCard[] = [
+  {
+    description: 'Frontier image editing model.',
+    displayName: 'FLUX.1 Kontext Dev',
+    enabled: true,
+    id: 'flux-kontext/dev',
+    parameters: FluxKontextDevParamsSchema,
+    releasedAt: '2025-06-28',
+    type: 'image',
+  },
   {
     description:
       'FLUX.1 Kontext [pro] 能够处理文本和参考图像作为输入，无缝实现目标性的局部编辑和复杂的整体场景变换。',
@@ -12,7 +22,7 @@ const googleChatModels: AIImageModelCard[] = [
     enabled: true,
     id: 'flux-pro/kontext',
     parameters: FluxKontextProParamsSchema,
-    releasedAt: '2024-08-01',
+    releasedAt: '2025-05-01',
     type: 'image',
   },
   {
