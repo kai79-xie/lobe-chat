@@ -133,7 +133,6 @@ const ModelSelect = memo(() => {
   return (
     <ActionDropdown
       menu={{
-        activeKey: menuKey(currentProvider, currentModel),
         className: styles.menu,
         items,
       }}
