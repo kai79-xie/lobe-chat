@@ -97,14 +97,31 @@ export const createGenerationTopicSlice: StateCreator<
 
     let output = '';
 
+    // Helper function to generate fallback title from prompts
+    const generateFallbackTitle = () => {
+      // Extract title from the first prompt content
+      const title = prompts[0]
+        .replaceAll(/[^\s\w\u4E00-\u9FFF]/g, '') // Remove punctuation, keep Chinese characters
+        .trim()
+        .split(/\s+/) // Split by whitespace
+        .slice(0, 3) // Take first 3 words
+        .join(' ')
+        .slice(0, 10); // Limit to 10 characters
+
+      return title;
+    };
+
     const generationTopicAgentConfig = systemAgentSelectors.generationTopic(
       useUserStore.getState(),
     );
     // Auto generate topic title from prompt by AI
     await chatService.fetchPresetTaskResult({
       params: merge(generationTopicAgentConfig, chainSummaryGenerationTitle(prompts, 'image')),
-      onError: () => {
-        internal_updateGenerationTopicTitleInSummary(topicId, topic.title || '');
+      onError: async () => {
+        const fallbackTitle = generateFallbackTitle();
+        internal_updateGenerationTopicTitleInSummary(topicId, fallbackTitle);
+        // Update the topic with fallback title
+        await get().internal_updateGenerationTopic(topicId, { title: fallbackTitle });
       },
       onFinish: async (text) => {
         await get().internal_updateGenerationTopic(topicId, { title: text });
