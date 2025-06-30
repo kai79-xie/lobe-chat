@@ -65,6 +65,8 @@
     "prepare": "husky",
     "prettier": "prettier -c --write \"**/**\"",
     "pull": "git pull",
+    "reinstall": "rm -rf pnpm-lock.yaml && rm -rf node_modules && pnpm -r exec rm -rf node_modules && pnpm install",
+    "reinstall:desktop": "rm -rf pnpm-lock.yaml && rm -rf node_modules && pnpm -r exec rm -rf node_modules && pnpm install --node-linker=hoisted",
     "release": "semantic-release",
     "self-hosting:docker": "docker build -t lobe-chat:local .",
     "self-hosting:docker-cn": "docker build -t lobe-chat-local --build-arg USE_CN_MIRROR=true .",

@@ -25,6 +25,10 @@ const config = {
     artifactName: '${productName}-${version}.${ext}',
   },
   asar: true,
+  asarUnpack: [
+    // https://github.com/lovell/sharp/issues/3155
+    '**/node_modules/sharp/**/*',
+  ],
   detectUpdateChannel: true,
   directories: {
     buildResources: 'build',
